@@ -4,8 +4,8 @@ const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
 // Get username and room from URL
-const { username, room } = Qs.parse(location.search, {
-  ignoreQueryPrefix: true
+const { username, room } = Qs.parse(window.location.search, {
+  ignoreQueryPrefix: true,
 });
 
 const socket = io();
@@ -13,31 +13,16 @@ const socket = io();
 // Join chatroom
 socket.emit('joinRoom', { username, room });
 
-// Get room and users
-socket.on('roomUsers', ({ room, users }) => {
-  outputRoomName(room);
-  outputUsers(users);
-});
-
-// Message from server
-socket.on('message', message => {
-  console.log(message);
-  outputMessage(message);
-
-  // Scroll down
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-});
-
 // Message submit
-chatForm.addEventListener('submit', e => {
+chatForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
   // Get message text
   let msg = e.target.elements.msg.value;
-  
+
   msg = msg.trim();
-  
-  if (!msg){
+
+  if (!msg) {
     return false;
   }
 
@@ -47,6 +32,7 @@ chatForm.addEventListener('submit', e => {
   // Clear input
   e.target.elements.msg.value = '';
   e.target.elements.msg.focus();
+  return null;
 });
 
 // Output message to DOM
@@ -66,16 +52,31 @@ function outputMessage(message) {
 }
 
 // Add room name to DOM
-function outputRoomName(room) {
-  roomName.innerText = room;
+function outputRoomName(r) {
+  roomName.innerText = r;
 }
 
 // Add users to DOM
 function outputUsers(users) {
   userList.innerHTML = '';
-  users.forEach(user=>{
+  users.forEach((user) => {
     const li = document.createElement('li');
     li.innerText = user.username;
     userList.appendChild(li);
   });
- }
+}
+
+// Get room and users
+socket.on('roomUsers', ({ room: r, users }) => {
+  outputRoomName(r);
+  outputUsers(users);
+});
+
+// Message from server
+socket.on('message', (message) => {
+  console.log(message);
+  outputMessage(message);
+
+  // Scroll down
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
